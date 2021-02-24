@@ -17,7 +17,7 @@ import java.util.Map;
 import org.cloudbus.cloudsim.lists.PeList;
 import org.cloudbus.cloudsim.provisioners.PeProvisioner;
 
-/**
+/**实现将cpu从物理机分配给虚拟机，并且支持多虚拟机共享cpu，这个应该就是昨天CloudletSchedulerTimeShared中mip后面总带share的原因
  * VmSchedulerTimeShared is a Virtual Machine Monitor (VMM) allocation policy that allocates one or more PEs 
  * from a PM to a VM, and allows sharing of PEs by multiple VMs. This class also implements 10% performance degradation due
  * to VM migration. This scheduler does not support over-subscription.
@@ -49,16 +49,28 @@ public class VmSchedulerTimeShared extends VmScheduler {
 		setMipsMapRequested(new HashMap<String, List<Double>>());
 	}
 
+	//此函数调用下面一个函数
 	@Override
 	public boolean allocatePesForVm(Vm vm, List<Double> mipsShareRequested) {
 		/*
 		 * @todo add the same to RAM and BW provisioners
 		 */
+		/**
+		 * vm.isInMigration()是看此虚拟机是否在迁移过程中，可能移入或移除
+		 *这段代码应该是根据移入移出逻辑写的，暂时这么看
+		 */
 		if (vm.isInMigration()) {
+			/**
+			 * !getVmsMigratingIn().contains(vm.getUid()) && !getVmsMigratingOut().contains(vm.getUid())
+			 * 如果vm正在迁移，且移入、移除名单都没有，那么久认为在移出，在移出名单里加上
+			 */
 			if (!getVmsMigratingIn().contains(vm.getUid()) && !getVmsMigratingOut().contains(vm.getUid())) {
 				getVmsMigratingOut().add(vm.getUid());
 			}
 		} else {
+			/**
+			 *如果vm不在迁移，并且移出名单里有他，说明移出结束了？
+			 */
 			if (getVmsMigratingOut().contains(vm.getUid())) {
 				getVmsMigratingOut().remove(vm.getUid());
 			}
@@ -86,7 +98,7 @@ public class VmSchedulerTimeShared extends VmScheduler {
 			totalRequestedMips += mips;
 		}
 
-		// This scheduler does not allow over-subscription
+		// This scheduler does not allow over-subscription 不能超过现有的可提供mips
 		if (getAvailableMips() < totalRequestedMips) {
 			return false;
 		}

@@ -30,6 +30,9 @@ public abstract class VmScheduler {
 	/** The PEs of the host where the scheduler is associated. */
 	private List<? extends Pe> peList;
 
+	//搞清楚下面这两个map的区别，就要搞清楚pe和mips的关系
+	//由于pe在vm之间是共享的，一个vm可能有占有多个pe的部分mip
+	//peMap是vm的id到pe list的映射，mipsMap同样，通过vm id找到mip的列表，其内值与peMap找到的pe list是对应的 respective
 	/** The map of VMs to PEs, where each key is a VM id and each value is 
          * a list of PEs allocated to that VM. */
 	private Map<String, List<Pe>> peMap;

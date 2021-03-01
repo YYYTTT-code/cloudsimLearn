@@ -342,6 +342,7 @@ public class DatacenterBroker extends SimEntity {
 
 	/**
 	 * Submit cloudlets to the created VMs.
+	 * 有可能是策略的地方
 	 * 
 	 * @pre $none
 	 * @post $none
